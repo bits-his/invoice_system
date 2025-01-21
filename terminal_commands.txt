@@ -1,0 +1,18 @@
+# Commands to reinstall dependencies and rebuild
+
+# Delete node_modules, lock files, and dist
+rm -rf node_modules package-lock.json dist
+
+# Clean npm cache
+npm cache clean --force
+
+# Install dependencies fresh
+npm install
+
+# Create fresh Tailwind config
+npx tailwindcss init -p
+
+# Start dev server
+npm run dev
+
+# Note: Run these commands in order. After running them, your Tailwind styles should work. Make sure to restart your development server after making these changes.
