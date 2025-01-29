@@ -10,6 +10,12 @@ const Navbar = () => {
 					</Link>
 					<div className="flex space-x-4">
 						<Link
+							to="/add-new"
+							className="text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md"
+						>
+							Add New
+						</Link>
+						<Link
 							to="/"
 							className="text-gray-600 hover:text-gray-800 px-3 py-2 rounded-md"
 						>

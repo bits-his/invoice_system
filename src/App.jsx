@@ -1,9 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import InvoiceForm from './components/InvoiceForm';
-import InvoiceList from './components/InvoiceList';
-import InvoiceView from './components/InvoiceView';
-import ReceiptView from './components/ReceiptView';
+import Navbar from './pages/Navbar';
+import InvoiceForm from './pages/InvoiceForm';
+import InvoiceList from './pages/InvoiceList';
+import InvoiceView from './pages/InvoiceView';
+import ReceiptView from './pages/ReceiptView';
+import RegisterInvoiceForm from './pages/Form';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <div className="container mx-auto px-4 py-8">
           <Routes>
             <Route path="/" element={<InvoiceList />} />
+            <Route path="/add-new" element={<RegisterInvoiceForm />} />
             <Route path="/create-invoice" element={<InvoiceForm />} />
             <Route path="/invoice/:id" element={<InvoiceView />} />
             <Route path="/receipt/:id" element={<ReceiptView />} />
