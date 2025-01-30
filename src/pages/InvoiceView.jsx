@@ -1,112 +1,154 @@
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router-dom";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
+import { getapi } from "@/lib/Helper";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import brainstormlogo from "../assets/logo-brainstorm.png";
 
 const InvoiceView = () => {
-	const { id } = useParams();
-	const [invoice] = useState({
-		// This would typically be fetched from your backend
-		id: 1,
-		invoiceNumber: 'INV-001',
-		clientName: 'John Doe',
-		clientEmail: 'john@example.com',
-		clientAddress: '123 Main St, City, Country',
-		items: [
-			{ description: 'Web Development', quantity: 1, price: 1000 },
-			{ description: 'Design Services', quantity: 2, price: 250 },
-		],
-		notes: 'Thank you for your business!',
-		status: 'pending',
-		date: '2024-01-20',
-		dueDate: '2024-02-20',
-	});
+  const { invoice_id } = useParams();
+  const invoiceRef = useRef(null);
+  const [invoice, setInvoice] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-	const calculateTotal = () => {
-		return invoice.items.reduce((sum, item) => sum + item.quantity * item.price, 0);
-	};
+  useEffect(() => {
+    if (!invoice_id) return;
+    getapi(
+      `api/getainvoicebyid?invoice_id=${invoice_id}`,
+      (response) => {
+        console.log("API Response:", response.response);
+        setInvoice(response.response);
+        // alert(invoice)
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching invoice:", error);
+        setIsLoading(false);
+      }
+    );
+  }, [invoice_id]);
 
-	const handleMarkAsPaid = () => {
-		// This would typically update the backend
-		console.log('Marking invoice as paid:', id);
-	};
+  if (isLoading) {
+    return <div className="text-center mt-5">Loading invoice details...</div>;
+  }
 
-	return (
-		<div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
-			<div className="flex justify-between items-start mb-8">
-				<div>
-					<h1 className="text-3xl font-bold text-gray-800">INVOICE</h1>
-					<p className="text-gray-600">#{invoice.invoiceNumber}</p>
-				</div>
-				<div className="text-right">
-					<p className="text-gray-600">Date: {invoice.date}</p>
-					<p className="text-gray-600">Due Date: {invoice.dueDate}</p>
-				</div>
-			</div>
+  const calculateTotal = () => {
+	  return invoice.reduce((sum, item) => sum + Number(item.total || 0), 0)
+	  .toLocaleString();
+  };
 
-			<div className="grid grid-cols-2 gap-8 mb-8">
-				<div>
-					<h2 className="text-lg font-semibold mb-2">From:</h2>
-					<p className="text-gray-600">Your Company Name</p>
-					<p className="text-gray-600">Your Address</p>
-					<p className="text-gray-600">contact@yourcompany.com</p>
-				</div>
-				<div>
-					<h2 className="text-lg font-semibold mb-2">Bill To:</h2>
-					<p className="text-gray-600">{invoice.clientName}</p>
-					<p className="text-gray-600">{invoice.clientAddress}</p>
-					<p className="text-gray-600">{invoice.clientEmail}</p>
-				</div>
-			</div>
+ const handleDownloadPDF = async () => {
+  const element = invoiceRef.current;
 
-			<table className="min-w-full mb-8">
-				<thead>
-					<tr className="border-b">
-						<th className="text-left py-3">Description</th>
-						<th className="text-right py-3">Quantity</th>
-						<th className="text-right py-3">Price</th>
-						<th className="text-right py-3">Total</th>
-					</tr>
-				</thead>
-				<tbody>
-					{invoice.items.map((item, index) => (
-						<tr key={index} className="border-b">
-							<td className="py-3">{item.description}</td>
-							<td className="text-right py-3">{item.quantity}</td>
-							<td className="text-right py-3">${item.price.toFixed(2)}</td>
-							<td className="text-right py-3">
-								${(item.quantity * item.price).toFixed(2)}
-							</td>
-						</tr>
-					))}
-				</tbody>
-				<tfoot>
-					<tr>
-						<td colSpan="3" className="text-right py-3 font-semibold">
-							Total:
-						</td>
-						<td className="text-right py-3 font-semibold">
-							${calculateTotal().toFixed(2)}
-						</td>
-					</tr>
-				</tfoot>
-			</table>
+  setTimeout(async () => {
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+    const imgWidth = 190;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+    pdf.save(`Invoice-${invoice[0]?.invoice_number || "unknown"}.pdf`);
+  }, 500); // Delay for 500ms
+};
 
-			<div className="mb-8">
-				<h2 className="text-lg font-semibold mb-2">Notes:</h2>
-				<p className="text-gray-600">{invoice.notes}</p>
-			</div>
+  return (
+    <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
+      {/* {JSON.stringify(invoice)} */}
+      <div ref={invoiceRef} className="p-4">
+        <div className="flex justify-between items-start mb-8">
+          <div className="text-right">
+            <img src={brainstormlogo} className="w-[50%] h-50" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">INVOICE</h1>
+            <p className="text-gray-600">{invoice[0].invoice_number}</p>
+          </div>
+        </div>
 
-			{invoice.status === 'pending' && (
-				<div className="flex justify-end">
-					<button
-						onClick={handleMarkAsPaid}
-						className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
-					>
-						Mark as Paid
-					</button>
-				</div>
-			)}
-		</div>
-	);
+        <div className="grid mb-5">
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Bill To:</h2>
+            <p className="text-gray-600">
+              <b>Name:</b> {invoice[0].client_name}
+            </p>
+            <p className="text-gray-600">
+              <b>Address:</b> {invoice[0].client_address}
+            </p>
+            <p className="text-gray-600">
+              <b>Email:</b> {invoice[0].client_email}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <Table className="min-w-full mb-8 border p-3 mt-8">
+          <TableHeader>
+            <TableRow className="border-b">
+              <TableHead className="text-left py-3 border">
+                Description
+              </TableHead>
+              <TableHead className="text-right py-3 border">Quantity</TableHead>
+              <TableHead className="text-right py-3 border">Price</TableHead>
+              <TableHead className="text-right py-3 border">Total</TableHead>
+            </TableRow>
+          </TableHeader>
+          {invoice.map((items, index) => (
+            <TableBody className="border">
+              <TableRow key={index} className="border">
+                <TableCell className="py-3 border">
+                  {items.description}
+                </TableCell>
+                <TableCell className="text-right py-3 border">
+                  {items.quantity}
+                </TableCell>
+                <TableCell className="text-right py-3 border">
+                  {items.price}
+                </TableCell>
+                <TableCell className="text-right py-3 border">
+                  {items.total}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          ))}
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan="3" className="text-right py-3 font-semibold">
+                Total:
+              </TableCell>
+              <TableCell className="text-right py-3 font-semibold">
+                &#8358;{calculateTotal()}
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </div>
+
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold mb-2">Notes:</h2>
+        <p className="text-gray-600">{invoice.notes}</p>
+      </div>
+
+      {/* {invoice.status === "pending" && ( */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleDownloadPDF}
+          className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+        >
+          Download PDF
+        </button>
+      </div>
+      {/* )} */}
+    </div>
+  );
 };
 
 export default InvoiceView;

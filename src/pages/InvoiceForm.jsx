@@ -77,7 +77,7 @@ const InvoiceForm = () => {
 		  data,
 		  (res) => {
 			  alert("Invoice has been successfully generated l");
-            //   navigate(`/invoices/${res.data.invoice_id}`);
+              navigate(`/`);
 		  },
 		  (err) => {
 			  alert("Error generating invoice")

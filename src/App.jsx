@@ -16,7 +16,7 @@ function App() {
             <Route path="/" element={<InvoiceList />} />
             <Route path="/add-new" element={<RegisterInvoiceForm />} />
             <Route path="/create-invoice" element={<InvoiceForm />} />
-            <Route path="/invoice/:id" element={<InvoiceView />} />
+            <Route path="/invoice/:invoice_id" element={<InvoiceView />} />
             <Route path="/receipt/:id" element={<ReceiptView />} />
           </Routes>
         </div>

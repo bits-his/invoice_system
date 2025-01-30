@@ -1,19 +1,30 @@
-import { useState } from 'react';
+import { getapi } from '@/lib/Helper';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const InvoiceList = () => {
-	const [invoices] = useState([
-		// This would typically come from your backend
-		{
-			id: 1,
-			clientName: 'John Doe',
-			invoiceNumber: 'INV-001',
-			amount: 1500,
-			status: 'pending',
-			date: '2024-01-20',
-		},
-		// Add more sample invoices as needed
-	]);
+
+	const [invoices, setInvoices] = useState([])
+	const [isLoading, setIsLoading] = useState(false)
+
+	const getinvoices = () => {
+		setIsLoading(true)
+		getapi(
+			'api/getallinvoices',
+            (response) => {
+                setInvoices(response.invoices)
+                setIsLoading(false)
+            },
+            (error) => {
+                console.error(error)
+                setIsLoading(false)
+            }
+		)
+	}
+
+	useEffect(() => (
+		getinvoices()
+	),[])
 
 	return (
 		<div className="bg-white rounded-lg shadow-md">
@@ -30,7 +41,7 @@ const InvoiceList = () => {
 									Client
 								</th>
 								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-									Amount
+									Amount(&#8358;)
 								</th>
 								<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 									Status
@@ -43,17 +54,18 @@ const InvoiceList = () => {
 								</th>
 							</tr>
 						</thead>
+						{/* {JSON.stringify(invoices[0])} */}
 						<tbody className="bg-white divide-y divide-gray-200">
 							{invoices.map((invoice) => (
 								<tr key={invoice.id}>
 									<td className="px-6 py-4 whitespace-nowrap">
-										{invoice.invoiceNumber}
+										{invoice.invoice_number}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
-										{invoice.clientName}
+										{invoice.client_name}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
-										${invoice.amount}
+										{invoice.amount}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
 										<span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -65,18 +77,18 @@ const InvoiceList = () => {
 										</span>
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
-										{invoice.date}
+										{invoice.invoice_date}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
 										<Link
-											to={`/invoice/${invoice.id}`}
+											to={`/invoice/${invoice.invoice_id}`}
 											className="text-blue-600 hover:text-blue-900 mr-4"
 										>
 											View
 										</Link>
 										{invoice.status === 'pending' && (
 											<Link
-												to={`/receipt/${invoice.id}`}
+												to={`/receipt/${invoice}`}
 												className="text-green-600 hover:text-green-900"
 											>
 												Receipt
