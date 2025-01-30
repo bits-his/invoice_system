@@ -1,45 +1,64 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/Label";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from "@/components/ui/table";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { postapi } from "@/lib/Helper";
 
 const InvoiceForm = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    clientName: "",
-    clientEmail: "",
+    client: "",
+    email: "",
     clientAddress: "",
     invoiceNumber: `INV-${Date.now()}`,
     invoiceDate: new Date().toISOString().split("T")[0],
     dueDate: "",
-    items: [{ description: "", quantity: 1, price: 0 }],
+    items: [],
     notes: "",
   });
 
+  const [newItem, setNewItem] = useState({
+    description: "",
+    quantity: "",
+    price: "",
+  });
+  const [editingIndex, setEditingIndex] = useState(null);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleItemChange = (index, field, value) => {
-    const newItems = [...formData.items];
-    newItems[index][field] = value;
-    setFormData((prev) => ({
-      ...prev,
-      items: newItems,
-    }));
+  const handleNewItemChange = (e) => {
+    const { name, value } = e.target;
+    setNewItem((prev) => ({ ...prev, [name]: value }));
   };
 
   const addItem = () => {
-    setFormData((prev) => ({
-      ...prev,
-      items: [...prev.items, { description: "", quantity: 1, price: 0 }],
-    }));
+    if (editingIndex !== null) {
+      const updatedItems = [...formData.items];
+      updatedItems[editingIndex] = newItem;
+      setFormData((prev) => ({ ...prev, items: updatedItems }));
+      setEditingIndex(null);
+    } else {
+      setFormData((prev) => ({ ...prev, items: [...prev.items, newItem] }));
+    }
+    setNewItem({ description: "", quantity: 1, price: 0 });
+  };
+
+  const editItem = (index) => {
+    setNewItem(formData.items[index]);
+    setEditingIndex(index);
   };
 
   const removeItem = (index) => {
@@ -51,121 +70,151 @@ const InvoiceForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would typically save the invoice to your backend
-    console.log(formData);
-    navigate("/");
+	  console.log(formData);
+	  const data = {...formData}
+	  postapi(
+		  `api/generatemyinvoice`,
+		  data,
+		  (res) => {
+			  alert("Invoice has been successfully generated l");
+            //   navigate(`/invoices/${res.data.invoice_id}`);
+		  },
+		  (err) => {
+			  alert("Error generating invoice")
+			  console.log(err);
+		  }
+	  )
   };
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
       <h2 className="text-2xl font-bold mb-6">Create New Invoice</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-2">
-            <div>
-              <Label className="block text-sm font-medium text-gray-700">
-                Client Name
-              </Label>
-              <Input
-                type="text"
-                name="clientName"
-                value={formData.clientName}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                required
-              />
-            </div>
-            <div>
-              <Label className="block text-sm font-medium text-gray-700">
-                Client Email
-              </Label>
-              <Input
-                type="email"
-                name="clientEmail"
-                value={formData.clientEmail}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                required
-              />
-            </div>
-          </div>
-			  </div>
-			  {/* =================================servcies================================ */}
-        {formData.items.map((item, index) => (
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-            <div className="grid auto-rows-min gap-4 md:grid-cols-2">
-              <div className="">
-                <Label>Description</Label>
-                <Input
-                  type="text"
-                  placeholder="Description"
-                  value={item.description}
-                  onChange={(e) =>
-                    handleItemChange(index, "description", e.target.value)
-                  }
-                  className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              <div className="flex items-end justify-center gap-4">
-                <div className="">
-                  <Label>Amount</Label>
-                  <Input
-                    type="number"
-                    placeholder="Price"
-                    value={item.price}
-                    onChange={(e) =>
-                      handleItemChange(
-                        index,
-                        "price",
-                        parseFloat(e.target.value)
-                      )
-                    }
-                    className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-                <Button
-                  type="button"
-                  onClick={() => removeItem(index)}
-                  variant="destructive"
-                  className="hover:text-red-700"
-                >
-                  Remove
-                </Button>
-              </div>
-            </div>
-          </div>
-        ))}
-        <div className="p-4 pt-0">
-          <Button
-            type="button"
-            onClick={addItem}
-            variant="outline"
-            className="mt-2 text-blue-500 hover:text-blue-700"
-          >
-            + Add Item
-          </Button>
-          <div className="pt-2">
-            <Label className="block text-sm font-medium text-gray-700">
-              Notes
-            </Label>
-            <Textarea
-              name="notes"
-              value={formData.notes}
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <Label>Client Name</Label>
+            <Input
+              type="text"
+              name="client"
+              value={formData.client}
               onChange={handleInputChange}
-              rows="3"
-              placeholder="Some notes if any"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <Label>Client Email</Label>
+            <Input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div>
+            <Label>Client Address</Label>
+            <Input
+              type="text"
+              name="clientAddress"
+              value={formData.clientAddress}
+              onChange={handleInputChange}
+              required
             />
           </div>
         </div>
 
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="">
+            <Label>Description</Label>
+            <Input
+              type="text"
+              placeholder="Description"
+              name="description"
+              value={newItem.description}
+              onChange={handleNewItemChange}
+            />
+          </div>
+          <div className="">
+            <Label>Quantity</Label>
+            <Input
+              type="number"
+              placeholder="Quantity"
+              name="quantity"
+              value={newItem.quantity}
+              onChange={handleNewItemChange}
+            />
+          </div>
+          <div className="">
+            <Label>Amount</Label>
+            <Input
+              type="number"
+              placeholder="Price"
+              name="price"
+              value={newItem.price}
+              onChange={handleNewItemChange}
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-center items-center">
+          <Button
+            type="button"
+            onClick={addItem}
+            className="bg-blue-500 text-white"
           >
+            {editingIndex !== null ? "Update Item" : "Add Item"}
+          </Button>
+        </div>
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Description</TableHead>
+              <TableHead>Quantity</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {formData.items.map((item, index) => (
+              <TableRow key={index}>
+                <TableCell>{item.description}</TableCell>
+                <TableCell>{item.quantity}</TableCell>
+                <TableCell>{item.price}</TableCell>
+                <TableCell className="flex gap-2">
+                  <Button
+                    onClick={() => editItem(index)}
+                    className="bg-blue-500 text-white"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    onClick={() => removeItem(index)}
+                    variant="destructive"
+                  >
+                    Remove
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+        <div>
+          <Label>Notes</Label>
+          <Textarea
+            name="notes"
+            value={formData.notes}
+            onChange={handleInputChange}
+            rows="3"
+            placeholder="Some notes if any"
+          />
+        </div>
+
+        <div className="flex justify-end">
+          <Button type="submit" className="bg-blue-500 text-white">
             Generate Invoice
-          </button>
+          </Button>
         </div>
       </form>
     </div>
