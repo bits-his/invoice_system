@@ -10,12 +10,20 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { postapi } from "@/lib/Helper";
+import { getapi, postapi } from "@/lib/Helper";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const InvoiceForm = () => {
   const navigate = useNavigate();
+  const [banks, setBanks] = useState([]);
   const [formData, setFormData] = useState({
     client: "",
     email: "",
@@ -24,7 +32,8 @@ const InvoiceForm = () => {
     invoiceDate: new Date().toISOString().split("T")[0],
     dueDate: "",
     items: [],
-    notes: "",
+	  notes: "",
+	bank_id: "",
   });
 
   const [newItem, setNewItem] = useState({
@@ -45,14 +54,23 @@ const InvoiceForm = () => {
   };
 
   const addItem = () => {
+    if (!newItem.description || !newItem.quantity || !newItem.price) {
+      alert("Please fill in all item fields.");
+      return;
+    }
+
     if (editingIndex !== null) {
+      // Update an existing item instead of adding a new one
       const updatedItems = [...formData.items];
       updatedItems[editingIndex] = newItem;
       setFormData((prev) => ({ ...prev, items: updatedItems }));
       setEditingIndex(null);
     } else {
+      // Add a new item
       setFormData((prev) => ({ ...prev, items: [...prev.items, newItem] }));
     }
+
+    // Reset new item fields
     setNewItem({ description: "", quantity: 1, price: 0 });
   };
 
@@ -70,20 +88,37 @@ const InvoiceForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-	  console.log(formData);
-	  const data = {...formData}
-	  postapi(
-		  `api/generatemyinvoice`,
-		  data,
-		  (res) => {
-			  alert("Invoice has been successfully generated l");
-              navigate(`/`);
-		  },
-		  (err) => {
-			  alert("Error generating invoice")
-			  console.log(err);
-		  }
-	  )
+    if (editingIndex !== null) {
+      //   alert("Please finish editing the item before submitting.");
+      return;
+    }
+    console.log(formData);
+    const data = { ...formData };
+    postapi(
+      `api/generatemyinvoice`,
+      data,
+      (res) => {
+        alert("Invoice has been successfully generated l");
+        navigate(`/`);
+      },
+      (err) => {
+        alert("Error generating invoice");
+        console.log(err);
+      }
+    );
+	};
+	
+	useEffect(() => {
+		getapi(`api/getbanks`, (response) => {
+            console.log("API Response:", response.response);
+            setBanks(response.response);
+        }, (error) => {
+            console.error("Error fetching banks:", error);
+        })
+	}, [])
+
+	const handleBankChange = (value) => {
+    setFormData((prev) => ({ ...prev, bank_id: value }));
   };
 
   return (
@@ -121,7 +156,24 @@ const InvoiceForm = () => {
               required
             />
           </div>
-        </div>
+          <div>
+            <Label>Bank</Label>
+            <Select onValueChange={handleBankChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a Bank" />
+              </SelectTrigger>
+              <SelectContent>
+                {banks.map((bank) => (
+                  <SelectItem key={bank.id} value={bank.id}>
+						{ bank.bank_name}({bank.account_name})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+			  </div>
+			  
+			  <h3 className="text-center font-bold text-gray-400 pb-0 mb-0" style={{fontSize:"20px"}}>Services</h3>
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="">
