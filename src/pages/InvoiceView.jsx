@@ -6,6 +6,7 @@ import { getapi } from "@/lib/Helper";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableFooter,
   TableHead,
@@ -42,23 +43,24 @@ const InvoiceView = () => {
   }
 
   const calculateTotal = () => {
-	  return invoice.reduce((sum, item) => sum + Number(item.total || 0), 0)
-	  .toLocaleString();
+    return invoice
+      .reduce((sum, item) => sum + Number(item.total || 0), 0)
+      .toLocaleString();
   };
 
- const handleDownloadPDF = async () => {
-  const element = invoiceRef.current;
+  const handleDownloadPDF = async () => {
+    const element = invoiceRef.current;
 
-  setTimeout(async () => {
-    const canvas = await html2canvas(element, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "a4");
-    const imgWidth = 190;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-    pdf.save(`Invoice-${invoice[0]?.invoice_number || "unknown"}.pdf`);
-  }, 500); // Delay for 500ms
-};
+    setTimeout(async () => {
+      const canvas = await html2canvas(element, { scale: 2 });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgWidth = 190;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+      pdf.save(`Invoice-${invoice[0]?.invoice_number || "unknown"}.pdf`);
+    }, 500); // Delay for 500ms
+  };
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
@@ -91,7 +93,8 @@ const InvoiceView = () => {
       </div>
       <div>
         <Table className="min-w-full mb-8 border p-3 mt-8">
-          <TableHeader>
+          <TableCaption>brainstorm</TableCaption>
+          <TableHeader className=" bg-gray-200">
             <TableRow className="border-b">
               <TableHead className="text-left py-3 border">
                 Description
