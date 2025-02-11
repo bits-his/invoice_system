@@ -29,3 +29,18 @@ export const getapi = (url, success = (f) => f, error = (f) => f) => {
       error(err);
     });
 }
+
+export const _put = (url, data, success = (f) => f, error = (f) => f) => {
+  fetch(`${server_url}/${url}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  })
+    .then((raw) => raw.json())
+    .then((result) => {
+      success(result);
+    })
+    .catch((err) => {
+      error(err);
+    });
+};

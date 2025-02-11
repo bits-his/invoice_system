@@ -5,6 +5,7 @@ import InvoiceList from './pages/InvoiceList';
 import InvoiceView from './pages/InvoiceView';
 import ReceiptView from './pages/ReceiptView';
 import RegisterInvoiceForm from './pages/Form';
+import { ToastContainer } from 'react-toastify';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           </Routes>
         </div>
       </div>
+      <ToastContainer />
     </Router>
   );
 }

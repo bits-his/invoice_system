@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "react-toastify";
 
 const InvoiceForm = () => {
   const navigate = useNavigate();
@@ -32,8 +33,8 @@ const InvoiceForm = () => {
     invoiceDate: new Date().toISOString().split("T")[0],
     dueDate: "",
     items: [],
-	  notes: "",
-	bank_id: "",
+    notes: "",
+    bank_id: "",
   });
 
   const [newItem, setNewItem] = useState({
@@ -98,26 +99,30 @@ const InvoiceForm = () => {
       `api/generatemyinvoice`,
       data,
       (res) => {
-        alert("Invoice has been successfully generated l");
+        toast.success("Invoice has been successfully generated l");
         navigate(`/`);
       },
       (err) => {
-        alert("Error generating invoice");
+        toast.error("Error generating invoice");
         console.log(err);
       }
     );
-	};
-	
-	useEffect(() => {
-		getapi(`api/getbanks`, (response) => {
-            console.log("API Response:", response.response);
-            setBanks(response.response);
-        }, (error) => {
-            console.error("Error fetching banks:", error);
-        })
-	}, [])
+  };
 
-	const handleBankChange = (value) => {
+  useEffect(() => {
+    getapi(
+      `api/getbanks`,
+      (response) => {
+        console.log("API Response:", response.response);
+        setBanks(response.response);
+      },
+      (error) => {
+        console.error("Error fetching banks:", error);
+      }
+    );
+  }, []);
+
+  const handleBankChange = (value) => {
     setFormData((prev) => ({ ...prev, bank_id: value }));
   };
 
@@ -165,15 +170,20 @@ const InvoiceForm = () => {
               <SelectContent>
                 {banks.map((bank) => (
                   <SelectItem key={bank.id} value={bank.id}>
-						{ bank.bank_name}({bank.account_name})
+                    {bank.bank_name}({bank.account_name})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-			  </div>
-			  
-			  <h3 className="text-center font-bold text-gray-400 pb-0 mb-0" style={{fontSize:"20px"}}>Services</h3>
+        </div>
+
+        <h3
+          className="text-center font-bold text-gray-400 pb-0 mb-0"
+          style={{ fontSize: "20px" }}
+        >
+          Services
+        </h3>
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="">
