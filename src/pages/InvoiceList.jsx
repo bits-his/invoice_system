@@ -45,13 +45,15 @@ const InvoiceList = () => {
 
   // Filter invoices when searchQuery changes
   useEffect(() => {
-    const filtered = invoices.filter(
+    const filtered = invoices?.filter(
       (invoice) =>
-        invoice.client_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        invoice.client_name
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
         invoice.invoice_number
           .toLowerCase()
           .includes(searchQuery.toLowerCase()) ||
-        invoice.invoice_date.toLowerCase().includes(searchQuery.toLowerCase())
+        invoice.invoice_date?.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredInvoice(filtered);
   }, [searchQuery, invoices]);
@@ -103,6 +105,9 @@ const InvoiceList = () => {
                   Amount(₦)
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Category
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -114,7 +119,7 @@ const InvoiceList = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredInvoice.map((invoice) => (
+              {filteredInvoice?.map((invoice) => (
                 <tr key={invoice.invoice_id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {invoice.invoice_number}
@@ -124,6 +129,9 @@ const InvoiceList = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {invoice.amount}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {invoice.inv_category}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {invoice.invoice_date.slice(0, 10)}
@@ -146,7 +154,7 @@ const InvoiceList = () => {
                     >
                       View
                     </Link>
-                    {invoice.status === "paid" && (
+                    {invoice?.status === "paid" && (
                       <Link
                         to={`/receipt/${invoice.invoice_id}`}
                         className="text-green-600 hover:text-green-900 mr"
@@ -156,7 +164,7 @@ const InvoiceList = () => {
                         </Button>
                       </Link>
                     )}
-                    {invoice.status !== "paid" && (
+                    {invoice?.status !== "paid" && (
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button
@@ -219,7 +227,7 @@ const InvoiceList = () => {
                   </td>
                 </tr>
               ))}
-              {filteredInvoice.length === 0 && (
+              {filteredInvoice?.length === 0 && (
                 <tr>
                   <td colSpan="5" className="text-center py-4">
                     No invoices found.

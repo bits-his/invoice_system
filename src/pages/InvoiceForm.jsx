@@ -35,7 +35,23 @@ const InvoiceForm = () => {
     items: [],
     notes: "",
     bank_id: "",
+    inv_category: "",
   });
+
+  const invoiceCategories = [
+    "Sales Invoice",
+    "Purchase Invoice",
+    "Service Invoice",
+    "Proforma Invoice",
+    "Commercial Invoice",
+    "Credit Note",
+    "Debit Note",
+    "Tax Invoice",
+    "Utility Invoice",
+    "Recurring Invoice",
+  ];
+
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   const [newItem, setNewItem] = useState({
     description: "",
@@ -125,6 +141,9 @@ const InvoiceForm = () => {
   const handleBankChange = (value) => {
     setFormData((prev) => ({ ...prev, bank_id: value }));
   };
+  const handlecategoryChange = (value) => {
+    setFormData((prev) => ({ ...prev, inv_category: value }));
+  };
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
@@ -171,6 +190,21 @@ const InvoiceForm = () => {
                 {banks.map((bank) => (
                   <SelectItem key={bank.id} value={bank.id}>
                     {bank.bank_name}({bank.account_name})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Transaction Category</Label>
+            <Select onValueChange={handlecategoryChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a Bank" />
+              </SelectTrigger>
+              <SelectContent>
+                {invoiceCategories.map((invoice, index) => (
+                  <SelectItem key={index} value={invoice}>
+                    {invoice}
                   </SelectItem>
                 ))}
               </SelectContent>
